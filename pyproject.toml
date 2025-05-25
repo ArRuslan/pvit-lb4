@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "accisibility-tester"
+version = "0.1.0"
+description = ""
+authors = ["RuslanUC <dev_ruslan_uc@protonmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+django = "^5.2.1"
+axe-selenium-python = "^2.1.6"
+selenium = "^4.33.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
