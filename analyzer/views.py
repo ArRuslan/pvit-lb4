@@ -83,3 +83,9 @@ def results_view(request):
         "violations": violations,
         "scan": scan,
     })
+
+
+@login_required
+def my_scans_view(request):
+    scans = WebsiteScan.objects.filter(user=request.user).order_by("-timestamp")
+    return render(request, "my_scans.html", {"scans": scans})
