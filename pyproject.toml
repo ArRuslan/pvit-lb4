@@ -10,6 +10,7 @@ python = "^3.11"
 django = "^5.2.1"
 axe-selenium-python = "^2.1.6"
 selenium = "^4.33.0"
+pillow = "^11.2.1"
 
 
 [build-system]

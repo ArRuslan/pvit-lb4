@@ -13,6 +13,13 @@
         <hr>
     </div>
 
+{% if scan.screenshot %}
+    <div class="mb-4">
+        <h4>Screenshot</h4>
+        <img src="{{ scan.screenshot.url }}" alt="Screenshot" class="img-fluid border rounded shadow-sm">
+    </div>
+{% endif %}
+
     {% if violations %}
         <div class="accordion" id="violationAccordion">
         {% for v in violations %}

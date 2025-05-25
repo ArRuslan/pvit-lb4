@@ -5,6 +5,7 @@ class WebsiteScan(models.Model):
     url = models.URLField()
     timestamp = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    screenshot = models.ImageField(upload_to="screenshots/", null=True, blank=True)
 
     def __str__(self):
         return f"{self.url} @ {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"

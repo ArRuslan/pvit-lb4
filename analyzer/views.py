@@ -1,6 +1,9 @@
+from uuid import uuid4
+
 from axe_selenium_python import Axe
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.core.files.base import ContentFile
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from selenium import webdriver
@@ -37,14 +40,18 @@ def url_check_view(request):
         options.add_argument("--log-level=3")
         driver = webdriver.Firefox(options=options)
         driver.get(url)
+        driver.set_window_size(1280, 720)
 
         axe = Axe(driver)
         axe.inject()
         results = axe.run()
 
+        screenshot = driver.get_screenshot_as_png()
+
         driver.quit()
 
         scan = WebsiteScan.objects.create(url=url, user=request.user)
+        scan.screenshot.save(f"{uuid4()}.png", ContentFile(screenshot), save=True)
 
         for v in results["violations"]:
             for node in v["nodes"]:
