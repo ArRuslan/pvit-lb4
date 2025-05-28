@@ -7,6 +7,19 @@ class WebsiteScan(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     screenshot = models.ImageField(upload_to="screenshots/", null=True, blank=True)
 
+    doc_language_ok = models.IntegerField(default=0)
+    doc_language_errors = models.IntegerField(default=0)
+    alt_texts_ok = models.IntegerField(default=0)
+    alt_texts_errors = models.IntegerField(default=0)
+    input_labels_ok = models.IntegerField(default=0)
+    input_labels_errors = models.IntegerField(default=0)
+    empty_buttons_ok = models.IntegerField(default=0)
+    empty_buttons_errors = models.IntegerField(default=0)
+    empty_links_ok = models.IntegerField(default=0)
+    empty_links_errors = models.IntegerField(default=0)
+    color_contrast_ok = models.IntegerField(default=0)
+    color_contrast_errors = models.IntegerField(default=0)
+
     def __str__(self):
         return f"{self.url} @ {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
 

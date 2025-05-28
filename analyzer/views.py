@@ -9,6 +9,7 @@ from django.urls import reverse
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
+from .accessibility_tester import AccessibilityTester
 from .forms import URLForm, RegisterForm
 from .models import Violation, WebsiteScan
 
@@ -34,23 +35,34 @@ def url_check_view(request):
 
         url = form.cleaned_data["url"]
 
-        options = FirefoxOptions()
-        options.headless = True
-        options.add_argument("--headless")
-        options.add_argument("--log-level=3")
-        driver = webdriver.Firefox(options=options)
-        driver.get(url)
-        driver.set_window_size(1280, 720)
+        tester = AccessibilityTester(url)
+        tester.start_driver()
+        tester.test_page()
 
-        axe = Axe(driver)
+        axe = Axe(tester.driver)
         axe.inject()
         results = axe.run()
 
-        screenshot = driver.get_screenshot_as_png()
+        screenshot = tester.driver.get_screenshot_as_png()
 
-        driver.quit()
+        tester.driver.quit()
 
-        scan = WebsiteScan.objects.create(url=url, user=request.user)
+        scan = WebsiteScan.objects.create(
+            url=url,
+            user=request.user,
+            doc_language_ok=tester.correct["doc_language"],
+            doc_language_errors=tester.wrong["doc_language"],
+            alt_texts_ok=tester.correct["alt_texts"],
+            alt_texts_errors=tester.wrong["alt_texts"],
+            input_labels_ok=tester.correct["input_labels"],
+            input_labels_errors=tester.wrong["input_labels"],
+            empty_buttons_ok=tester.correct["empty_buttons"],
+            empty_buttons_errors=tester.wrong["empty_buttons"],
+            empty_links_ok=tester.correct["empty_links"],
+            empty_links_errors=tester.wrong["empty_links"],
+            color_contrast_ok=tester.correct["color_contrast"],
+            color_contrast_errors=tester.wrong["color_contrast"],
+        )
         scan.screenshot.save(f"{uuid4()}.png", ContentFile(screenshot), save=True)
 
         for v in results["violations"]:
@@ -79,9 +91,29 @@ def results_view(request):
     scan = WebsiteScan.objects.get(id=scan_id)
     violations = scan.violations.all()
 
+    score = AccessibilityTester.calculate_result(
+        {
+            "doc_language": scan.doc_language_ok,
+            "alt_texts": scan.alt_texts_ok,
+            "input_labels": scan.input_labels_ok,
+            "empty_buttons": scan.empty_buttons_ok,
+            "empty_links": scan.empty_links_ok,
+            "color_contrast": scan.color_contrast_ok,
+        },
+        {
+            "doc_language": scan.doc_language_errors,
+            "alt_texts": scan.alt_texts_errors,
+            "input_labels": scan.input_labels_errors,
+            "empty_buttons": scan.empty_buttons_errors,
+            "empty_links": scan.empty_links_errors,
+            "color_contrast": scan.color_contrast_errors,
+        },
+    )
+
     return render(request, "results.html", {
         "violations": violations,
         "scan": scan,
+        "score": int(score * 100),
     })
 
 
